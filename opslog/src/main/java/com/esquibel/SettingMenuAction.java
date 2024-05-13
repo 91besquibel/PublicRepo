@@ -99,12 +99,21 @@ public class SettingMenuAction implements MenuAction {
         }
     }
 
-    private String readPreviousFilePath() {
-        // Read previous file path from sysSetting.txt if exists
-        // If not, return an empty string
-        // You can implement this method to read the previous file path
-        // For simplicity, I'll return an empty string
-        return "";
+   private String readPreviousFilePath() {
+    // Read previous file path from sysSetting.txt if exists
+    String previousFilePath = "";
+    try (BufferedReader reader = new BufferedReader(new FileReader("sysSetting.txt"))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("File Path:")) {
+                previousFilePath = line.substring(line.indexOf(":") + 1).trim();
+                break;
+            }
+        }
+    } catch (IOException e) {
+        System.err.println("Error reading previous file path: " + e.getMessage());
+    }
+    return previousFilePath;
     }
 
     private void createMainAppFolder() {
