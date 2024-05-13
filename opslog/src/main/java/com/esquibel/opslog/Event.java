@@ -1,115 +1,116 @@
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
+import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-/**
- * Class representing an event.
- */
-public class Event {
+public class Event implements Serializable {
 
-    private String date;
-    private String time;
-    private String initials;
-    private String title;
-    private String description;
-    private boolean addToCalendar;
+    private transient TabManager tabManager;
 
-    /**
-     * Constructor for Event.
-     * @param date The date of the event.
-     * @param time The time of the event.
-     * @param initials The initials of the person associated with the event.
-     * @param title The title of the event.
-     * @param description The description of the event.
-     */
-    public Event(String date, String time, String initials, String title, String description) {
-        this.date = date;
-        this.time = time;
-        this.initials = initials;
-        this.title = title;
-        this.description = description;
-        this.addToCalendar = false;
+    public Event(TabManager tabManager) {
+        this.tabManager = tabManager;
     }
 
-    /**
-     * Creates a popup dialog for adding an event.
-     */
-    public void createEventPopup() {
-        // Create the popup dialog
+    public void createEventPopup(Tab currentTab) {
+        String eventFilePath = tabManager.getEventFilePathForTab(currentTab);
+        if (eventFilePath == null) {
+            return;
+        }
+
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Add Event");
         dialog.setHeaderText("Fill in the details for the event");
 
-        // Set the button types
         ButtonType createButtonType = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
 
-        // Create the grid layout for the popup
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        // Add controls to the grid
+        // Date Picker
+        DatePicker datePicker = new DatePicker();
+        datePicker.setConverter(new StringConverter<LocalDate>() {
+            String pattern = "MM/dd/yyyy";
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
+
+            {
+                datePicker.setPromptText(pattern.toLowerCase());
+            }
+
+            @Override
+            public String toString(LocalDate date) {
+                if (date != null) {
+                    return dateFormatter.format(date);
+                } else {
+                    return "";
+                }
+            }
+
+            @Override
+            public LocalDate fromString(String string) {
+                if (string != null && !string.isEmpty()) {
+                    return LocalDate.parse(string, dateFormatter);
+                } else {
+                    return null;
+                }
+            }
+        });
+        grid.add(new Label("Date:"), 0, 0);
+        grid.add(datePicker, 1, 0);
+
+        // Initials Text Field
         TextField initialsField = new TextField();
         initialsField.setPromptText("Enter initials");
+        grid.add(new Label("Initials:"), 0, 1);
+        grid.add(initialsField, 1, 1);
+
+        // Title Text Field
         TextField titleField = new TextField();
         titleField.setPromptText("Enter title");
+        grid.add(new Label("Title:"), 0, 2);
+        grid.add(titleField, 1, 2);
+
+        // Description Text Area
         TextArea descriptionArea = new TextArea();
         descriptionArea.setPromptText("Enter description");
-        CheckBox linkToCalendarCheckBox = new CheckBox("Link to Calendar");
-        DatePicker startDatePicker = new DatePicker();
-        DatePicker endDatePicker = new DatePicker();
-        ComboBox<String> startTimeComboBox = new ComboBox<>();
-        ComboBox<String> endTimeComboBox = new ComboBox<>();
-        // Populate the time dropdowns with dummy values for demonstration
-        startTimeComboBox.getItems().addAll("09:00", "10:00", "11:00");
-        endTimeComboBox.getItems().addAll("10:00", "11:00", "12:00");
+        grid.add(new Label("Description:"), 0, 3);
+        grid.add(descriptionArea, 1, 3);
 
-        grid.add(new Label("Initials:"), 0, 0);
-        grid.add(initialsField, 1, 0);
-        grid.add(new Label("Title:"), 0, 1);
-        grid.add(titleField, 1, 1);
-        grid.add(new Label("Description:"), 0, 2);
-        grid.add(descriptionArea, 1, 2);
-        grid.add(linkToCalendarCheckBox, 0, 3, 2, 1);
-        grid.add(new Label("Calendar Range:"), 0, 4);
-        grid.add(startDatePicker, 1, 4);
-        grid.add(startTimeComboBox, 2, 4);
-        grid.add(new Label("to"), 3, 4);
-        grid.add(endDatePicker, 4, 4);
-        grid.add(endTimeComboBox, 5, 4);
+        // Add to Calendar CheckBox
+        CheckBox addToCalendarCheckBox = new CheckBox("Add to Calendar");
+        grid.add(addToCalendarCheckBox, 0, 4, 2, 1);
 
-        // Enable/disable the create button based on the text field inputs
-        Button createButton = (Button) dialog.getDialogPane().lookupButton(createButtonType);
-        createButton.setDisable(true);
-
-        initialsField.textProperty().addListener((observable, oldValue, newValue) ->
-                createButton.setDisable(newValue.trim().isEmpty() || titleField.getText().trim().isEmpty() || descriptionArea.getText().trim().isEmpty()));
-
-        titleField.textProperty().addListener((observable, oldValue, newValue) ->
-                createButton.setDisable(newValue.trim().isEmpty() || initialsField.getText().trim().isEmpty() || descriptionArea.getText().trim().isEmpty()));
-
-        descriptionArea.textProperty().addListener((observable, oldValue, newValue) ->
-                createButton.setDisable(newValue.trim().isEmpty() || initialsField.getText().trim().isEmpty() || titleField.getText().trim().isEmpty()));
-
-        // Set the dialog content
         dialog.getDialogPane().setContent(grid);
 
-        // Request focus on the initials field by default
-        initialsField.requestFocus();
-
-        // Convert the result to an event when the create button is clicked
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == createButtonType) {
-                return null; // Handle event creation here
+                LocalDate date = datePicker.getValue();
+                String initials = initialsField.getText();
+                String title = titleField.getText();
+                String description = descriptionArea.getText();
+                boolean addToCalendar = addToCalendarCheckBox.isSelected();
+
+                saveEventForCurrentDay(eventFilePath, date, initials, title, description, addToCalendar);
             }
             return null;
         });
 
-        // Show the dialog
         dialog.showAndWait();
     }
-}
 
+    private void saveEventForCurrentDay(String eventFilePath, LocalDate date, String initials, String title, String description, boolean addToCalendar) {
+        // Construct file path based on date
+        String filePath = eventFilePath + "/" + date.toString() + ".txt";
+        try (FileWriter writer = new FileWriter(filePath, true)) {
+            // Write event details...
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle file writing error
+        }
+    }
+}
