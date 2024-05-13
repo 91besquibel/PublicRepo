@@ -2,7 +2,7 @@ public class TabManagerMenuAction implements MenuAction {
     @Override
     public void execute() {
         // Logic for Setting menu action
-        PopupWindow settingPopup = new PopupWindow("Tab Manager");
-        settingPopup.show();
+        PopupWindow tabManagerPopup = new PopupWindow("Tab Manager");
+        tabManagerPopup.show();
     }
 }
