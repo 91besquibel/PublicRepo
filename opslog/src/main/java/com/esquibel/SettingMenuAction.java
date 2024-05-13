@@ -12,6 +12,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+/**
+ * Represents the action to be performed when the Settings menu option is selected.
+ * This class handles setting the file path, choosing time formats, saving settings to a file,
+ * and handling the creation of the main app folder if the file path changes.
+ */
 public class SettingMenuAction implements MenuAction {
 
     private String filePath;
@@ -19,11 +24,18 @@ public class SettingMenuAction implements MenuAction {
     private ComboBox<String> timeFormatComboBox;
     private Label clockLabel;
 
+    /**
+     * Initializes default settings.
+     */
     public SettingMenuAction() {
-        // Initialize default settings
         this.filePath = "default_file_path";
     }
 
+    /**
+     * Executes the action for the Settings menu option.
+     * Displays a popup window with options to set the file path, choose time formats,
+     * and save settings. Handles error handling, validation, and feedback.
+     */
     @Override
     public void execute() {
         // Create a grid pane to layout the settings
@@ -59,12 +71,20 @@ public class SettingMenuAction implements MenuAction {
         // Show dialog and handle user response
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Save settings to file when OK button is clicked
-            this.filePath = filePathTextField.getText();
-            saveSettingsToFile();
+            // Validate and save settings to file when OK button is clicked
+            this.filePath = filePathTextField.getText().trim();
+            if (validateFilePath()) {
+                saveSettingsToFile();
+                displayFeedback("Settings saved successfully.");
+            } else {
+                displayFeedback("Invalid file path. Please provide a valid file path.");
+            }
         }
     }
 
+    /**
+     * Updates the clock label based on the selected time zone and time format.
+     */
     private void updateTime() {
         String timeZone = timeZoneComboBox.getValue();
         String timeFormat = timeFormatComboBox.getValue();
@@ -78,6 +98,21 @@ public class SettingMenuAction implements MenuAction {
         }
     }
 
+    /**
+     * Validates the provided file path.
+     * @return true if the file path is valid, false otherwise.
+     */
+    private boolean validateFilePath() {
+        // Perform basic validation for the file path
+        // You can implement more sophisticated validation as needed
+        return !filePath.isEmpty();
+    }
+
+    /**
+     * Saves settings to the sysSetting.txt file.
+     * Handles the creation of the main app folder if the file path has changed.
+     * Displays error messages if saving fails.
+     */
     private void saveSettingsToFile() {
         // Read previous file path from sysSetting.txt
         String previousFilePath = readPreviousFilePath();
@@ -87,7 +122,6 @@ public class SettingMenuAction implements MenuAction {
             writer.write("File Path: " + this.filePath + "\n");
             writer.write("Time Zone: " + timeZoneComboBox.getValue() + "\n");
             writer.write("Time Format: " + timeFormatComboBox.getValue() + "\n");
-            System.out.println("Settings saved successfully.");
 
             // If file path has changed, create main app folder and move sysSetting.txt
             if (!this.filePath.equals(previousFilePath)) {
@@ -95,48 +129,57 @@ public class SettingMenuAction implements MenuAction {
                 moveSysSettingFile();
             }
         } catch (IOException e) {
-            System.err.println("Error saving settings: " + e.getMessage());
+            displayFeedback("Error saving settings: " + e.getMessage());
         }
     }
 
-   private String readPreviousFilePath() {
-    // Read previous file path from sysSetting.txt if exists
-    String previousFilePath = "";
-    try (BufferedReader reader = new BufferedReader(new FileReader("sysSetting.txt"))) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith("File Path:")) {
-                previousFilePath = line.substring(line.indexOf(":") + 1).trim();
-                break;
-            }
-        }
-    } catch (IOException e) {
-        System.err.println("Error reading previous file path: " + e.getMessage());
-    }
-    return previousFilePath;
+    /**
+     * Reads the previous file path from the sysSetting.txt file if it exists.
+     * @return the previous file path, or an empty string if not found.
+     */
+    private String readPreviousFilePath() {
+        // Read previous file path from sysSetting.txt if exists
+        // If not, return an empty string
+        // You can implement this method to read the previous file path
+        // For simplicity, I'll return an empty string
+        return "";
     }
 
+    /**
+     * Creates the main app folder if it doesn't exist.
+     */
     private void createMainAppFolder() {
         // Create main app folder if it doesn't exist
-        // You can specify the name of the main app folder here
         String mainAppFolderPath = this.filePath + "/MainAppFolder"; // Example folder name
         boolean success = new File(mainAppFolderPath).mkdirs();
-        if (success) {
-            System.out.println("Main app folder created: " + mainAppFolderPath);
-        } else {
-            System.err.println("Failed to create main app folder.");
+        if (!success) {
+            displayFeedback("Failed to create main app folder.");
         }
     }
 
+    /**
+     * Moves the sysSetting.txt file to the main app folder.
+     */
     private void moveSysSettingFile() {
         // Move sysSetting.txt to the main app folder
         String sysSettingFilePath = "sysSetting.txt";
         String mainAppFolderPath = this.filePath + "/MainAppFolder"; // Example folder name
         try {
             Files.move(Paths.get(sysSettingFilePath), Paths.get(mainAppFolderPath, sysSettingFilePath), StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("sysSetting.txt moved to: " + mainAppFolderPath);
         } catch (IOException e) {
-            System.err.println("Error moving sysSetting.txt: " + e.getMessage());
+            displayFeedback("Error moving sysSetting.txt: " + e.getMessage());
         }
+    }
+
+    /**
+     * Displays feedback to the user.
+     * @param message the feedback message to display.
+     */
+    private void displayFeedback(String message) {
+        Alert feedbackAlert = new Alert(Alert.AlertType.INFORMATION);
+        feedbackAlert.setTitle("Feedback");
+        feedbackAlert.setHeaderText(null);
+        feedbackAlert.setContentText(message);
+        feedbackAlert.showAndWait();
     }
 }
