@@ -12,14 +12,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-/**
- * Represents the action to be performed when the Settings menu option is selected.
- * This class handles setting the file path, choosing time formats, saving settings to a file,
- * and handling the creation of the main app folder if the file path changes.
- */
 public class SettingMenuAction implements MenuAction {
 
-    private String filePath;
+    private static String filePath; // Make filePath static to allow access from other classes
     private ComboBox<String> timeZoneComboBox;
     private ComboBox<String> timeFormatComboBox;
     private Label clockLabel;
@@ -72,7 +67,7 @@ public class SettingMenuAction implements MenuAction {
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             // Validate and save settings to file when OK button is clicked
-            this.filePath = filePathTextField.getText().trim();
+            this.filePath = filePathTextField.getText().trim(); // Update static filePath
             if (validateFilePath()) {
                 saveSettingsToFile();
                 displayFeedback("Settings saved successfully.");
@@ -131,6 +126,14 @@ public class SettingMenuAction implements MenuAction {
         } catch (IOException e) {
             displayFeedback("Error saving settings: " + e.getMessage());
         }
+    }
+
+    /**
+     * Retrieves the file path.
+     * @return the file path.
+     */
+    public static String getFilePath() {
+        return filePath;
     }
 
     /**
