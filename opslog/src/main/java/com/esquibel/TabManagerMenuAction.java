@@ -72,6 +72,13 @@ public class TabManagerMenuAction implements MenuAction {
                     TabInfo newTab = new TabInfo(now.format(formatter), creator, type, title, filepath, "Visible");
                     tableView.getItems().add(newTab);
                     createTabFolder(filepath);
+                    if ("Calendar".equals(type)) {
+                        CalendarTab calendarTab = new CalendarTab();
+                        addTabToPane(calendarTab, title);
+                    } else if ("OpsLog".equals(type)) {
+                        OpsLogTab opsLogTab = new OpsLogTab();
+                        addTabToPane(opsLogTab, title);
+                    }
                     popupStage.close();
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -106,17 +113,24 @@ public class TabManagerMenuAction implements MenuAction {
     }
 
     private void createTabFolder(String filepath) {
-    // Create folder using the filepath
-    File folder = new File(filepath);
-    if (!folder.exists()) {
-        boolean success = folder.mkdirs();
-        if (!success) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Failed to create folder for tab.");
-            alert.showAndWait();
+        // Create folder using the filepath
+        File folder = new File(filepath);
+        if (!folder.exists()) {
+            boolean success = folder.mkdirs();
+            if (!success) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Failed to create folder for tab.");
+                alert.showAndWait();
+            }
         }
-      }
+    }
+
+    private void addTabToPane(Tab tab, String title) {
+        // Add tab to your TabPane or TabView instance in your UI
+        // For example:
+        tab.setText(title); // Set tab title
+        tabPane.getTabs().add(tab); // Assuming tabPane is your TabPane or TabView instance
     }
 }
