@@ -127,10 +127,25 @@ public class TabManagerMenuAction implements MenuAction {
         }
     }
 
-    private void addTabToPane(Tab tab, String title) {
-        // Add tab to your TabPane or TabView instance in your UI
-        // For example:
-        tab.setText(title); // Set tab title
-        tabPane.getTabs().add(tab); // Assuming tabPane is your TabPane or TabView instance
+    private void addTabToPane(TabInfo tabInfo, String title) {
+        // Create a new tab based on tabInfo and add it to the tabPane
+        Tab tab = new Tab();
+        tab.setText(title);
+        tabPane.getTabs().add(tab);
+    }
+    
+    private void createTabFolder(String filepath) {
+        // Create folder using the filepath
+        File folder = new File(filepath);
+        if (!folder.exists()) {
+            boolean success = folder.mkdirs();
+            if (!success) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Failed to create folder for tab.");
+                alert.showAndWait();
+            }
+        }
     }
 }
