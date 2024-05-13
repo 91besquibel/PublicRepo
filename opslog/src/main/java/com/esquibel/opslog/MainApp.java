@@ -3,29 +3,34 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import java.io.*;
 
-/**
- * The MainApp class represents the main entry point of the application.
- * It initializes the user interface and manages the overall application structure.
- */
 public class MainApp extends Application {
 
-    /**
-     * The start method initializes the primary stage and sets up the user interface.
-     *
-     * @param primaryStage The primary stage of the application.
-     */
+    private static final String MAIN_FOLDER_NAME = "MyAppData";
+    private static final String TAB_SETTINGS_FILE_NAME = "tab_settings.ser";
+    private static final String USER_SETTINGS_FILE_NAME = "user_settings.ser";
+
+    private TabPane tabPane;
+    private TabManager tabManager;
+
     @Override
     public void start(Stage primaryStage) {
+        // Load user settings
+        loadUserSettings();
+
         // Create menu bar with menu items
         MenuBar menuBar = createMenuBar();
 
         // Create a tab pane to hold draggable tabs
-        TabPane tabPane = new TabPane();
+        tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
 
-        // Initialize the DraggableTabManager to enable draggable tabs
-        DraggableTabManager draggableTabManager = new DraggableTabManager(tabPane);
+        // Initialize the TabManager to manage tabs
+        tabManager = new TabManager();
+
+        // Restore tabs from previous session
+        restoreTabs();
 
         // Create a border pane for the main layout
         BorderPane root = new BorderPane();
@@ -41,11 +46,6 @@ public class MainApp extends Application {
         primaryStage.show();
     }
 
-    /**
-     * Create a menu bar with menu items.
-     *
-     * @return The created menu bar.
-     */
     private MenuBar createMenuBar() {
         Menu menuSettings = new Menu("Settings");
         Menu menuTabManager = new Menu("Tab Manager");
@@ -58,11 +58,28 @@ public class MainApp extends Application {
         return menuBar;
     }
 
-    /**
-     * The main method launches the JavaFX application.
-     *
-     * @param args Command-line arguments (not used).
-     */
+    private void loadUserSettings() {
+        File mainFolder = new File(System.getProperty("user.home"), MAIN_FOLDER_NAME);
+        File userSettingsFile = new File(mainFolder, USER_SETTINGS_FILE_NAME);
+
+        // Read user settings from the file
+        // Implement according to your file I/O requirements
+    }
+
+    private void restoreTabs() {
+        tabManager.restoreTabs(tabPane);
+    }
+
+    private void saveTabs() {
+        tabManager.saveTabs(tabPane);
+    }
+
+    @Override
+    public void stop() {
+        // Save tab settings when the application closes
+        saveTabs();
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
