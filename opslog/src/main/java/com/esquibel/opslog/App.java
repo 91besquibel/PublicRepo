@@ -1,6 +1,8 @@
 package com.esquibel.opslog;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -22,11 +24,26 @@ public class App extends Application {
         Button historyViewButton = new Button("History View");
         Button helpButton = new Button("Help");
 
-        // Set event handlers for buttons
-        settingButton.setOnAction(event -> executeMenuAction(new SettingMenuAction()));
-        tabManagerButton.setOnAction(event -> executeMenuAction(new TabManagerMenuAction(tabPane)));
-        historyViewButton.setOnAction(event -> executeMenuAction(new HistoryViewMenuAction()));
-        helpButton.setOnAction(event -> executeMenuAction(new HelpMenuAction()));
+        // Find the widest button
+        double maxWidth = Math.max(Math.max(settingButton.prefWidth(-1), tabManagerButton.prefWidth(-1)),
+                                   Math.max(historyViewButton.prefWidth(-1), helpButton.prefWidth(-1)));
+
+        // Set all buttons to the same width
+        settingButton.setPrefWidth(maxWidth);
+        tabManagerButton.setPrefWidth(maxWidth);
+        historyViewButton.setPrefWidth(maxWidth);
+        helpButton.setPrefWidth(maxWidth);
+
+        // Center text on buttons
+        settingButton.setAlignment(Pos.CENTER);
+        tabManagerButton.setAlignment(Pos.CENTER);
+        historyViewButton.setAlignment(Pos.CENTER);
+        helpButton.setAlignment(Pos.CENTER);
+
+        // Create VBox for buttons
+        VBox buttonBox = new VBox(10, settingButton, tabManagerButton, historyViewButton, helpButton);
+        buttonBox.setAlignment(Pos.CENTER_LEFT); // Align buttons to the left side
+        buttonBox.setPadding(new Insets(10)); // Add padding around the buttons
 
         // Create tab pane and add a welcome tab
         tabPane = new TabPane();
@@ -36,7 +53,6 @@ public class App extends Application {
 
         // Create border pane to arrange components
         BorderPane root = new BorderPane();
-        VBox buttonBox = new VBox(settingButton, tabManagerButton, historyViewButton, helpButton);
         root.setLeft(buttonBox);
         root.setCenter(tabPane);
 
@@ -45,11 +61,6 @@ public class App extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("My JavaFX App");
         primaryStage.show();
-    }
-
-    private void executeMenuAction(MenuAction action) {
-        System.out.println("Menu item clicked: " + action);
-        action.execute();
     }
 
     public static void main(String[] args) {
