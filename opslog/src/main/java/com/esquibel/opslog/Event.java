@@ -1,21 +1,26 @@
+package com.esquibel.opslog;
+
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.util.StringConverter;
+
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class Event implements Serializable {
 
-    private transient TabManager tabManager;
+    private transient TabManagerMenuAction tabManager;
+    private TabPane tabPane; // Field to hold reference to TabPane
 
-    public Event(TabManager tabManager) {
+    public Event(TabManagerMenuAction tabManager, TabPane tabPane) {
         this.tabManager = tabManager;
+        this.tabPane = tabPane; // Initialize TabPane
     }
 
-    public void createEventPopup(Tab currentTab) {
-        String eventFilePath = tabManager.getEventFilePathForTab(currentTab);
+    public void createEventPopup(CalendarTab currentTab, TabPane tabPane) {
+        String eventFilePath = SettingMenuAction.getFilePath();
         if (eventFilePath == null) {
             return;
         }
@@ -95,7 +100,15 @@ public class Event implements Serializable {
                 String description = descriptionArea.getText();
                 boolean addToCalendar = addToCalendarCheckBox.isSelected();
 
-                saveEventForCurrentDay(eventFilePath, date, initials, title, description, addToCalendar);
+                String filepath = generateFilePath(title, eventFilePath);
+                saveEventForCurrentDay(filepath, date, initials, title, description, addToCalendar);
+
+                // Add event to the CalendarTab if checkbox is checked
+                if (addToCalendar) {
+                    if (currentTab instanceof CalendarTab) {
+                        ((CalendarTab) currentTab).addEventToList(date, title, description);
+                    }
+                }
             }
             return null;
         });
@@ -103,10 +116,12 @@ public class Event implements Serializable {
         dialog.showAndWait();
     }
 
-    private void saveEventForCurrentDay(String eventFilePath, LocalDate date, String initials, String title, String description, boolean addToCalendar) {
-        // Construct file path based on date
-        String filePath = eventFilePath + "/" + date.toString() + ".txt";
-        try (FileWriter writer = new FileWriter(filePath, true)) {
+    private String generateFilePath(String title, String eventFilePath) {
+        return eventFilePath + "/" + title + ".txt";
+    }
+
+    private void saveEventForCurrentDay(String filepath, LocalDate date, String initials, String title, String description, boolean addToCalendar) {
+        try (FileWriter writer = new FileWriter(filepath, true)) {
             // Write event details...
         } catch (IOException e) {
             e.printStackTrace();
@@ -114,3 +129,4 @@ public class Event implements Serializable {
         }
     }
 }
+

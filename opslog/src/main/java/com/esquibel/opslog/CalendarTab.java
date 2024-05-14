@@ -1,9 +1,10 @@
+package com.esquibel.opslog;
+
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,22 +12,29 @@ public class CalendarTab extends javafx.scene.control.Tab {
 
     private GridPane calendarGrid;
     private ListView<String> upcomingEventsListView;
+    private TabPane tabPane; // Reference to TabPane
+    private TabManagerMenuAction tabManager; // Reference to TabManagerMenuAction
 
-    public CalendarTab() {
+    private List<Event> events; // List to store events
+
+    public CalendarTab(TabPane tabPane, TabManagerMenuAction tabManager) {
         super("Calendar");
+        this.tabPane = tabPane; // Initialize TabPane
+        this.tabManager = tabManager; // Initialize TabManagerMenuAction
+        events = new ArrayList<>();
         createLayout();
     }
 
     private void createLayout() {
         BorderPane root = new BorderPane();
-        
+
         // Create the Upcoming Events Pane
         VBox upcomingEventsPane = createUpcomingEventsPane();
         SplitPane splitPane = new SplitPane();
         splitPane.setOrientation(Orientation.HORIZONTAL);
         splitPane.getItems().addAll(upcomingEventsPane, createCalendarPane());
         splitPane.setDividerPositions(0.3); // Set initial divider position
-        
+
         root.setCenter(splitPane);
         setContent(root);
     }
@@ -39,19 +47,14 @@ public class CalendarTab extends javafx.scene.control.Tab {
         upcomingEventsListView = new ListView<>();
         upcomingEventsListView.setPrefHeight(200); // Set initial height
 
-        // Populate upcoming events list (dummy data for demonstration)
-        List<String> upcomingEvents = new ArrayList<>();
-        for (int i = 1; i <= 20; i++) {
-            String event = "Event " + i + ": " + LocalDate.now().plusDays(i).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")) +
-                    " - " + LocalDate.now().plusDays(i+1).format(DateTimeFormatter.ofPattern("MMM dd, yyyy")) +
-                    " | Event Title " + i + " | Event Description " + i;
-            upcomingEvents.add(event);
+        // Populate upcoming events list
+        for (Event event : events) {
+            upcomingEventsListView.getItems().add(event.toString());
         }
-        upcomingEventsListView.getItems().addAll(upcomingEvents);
 
         HBox buttonBox = new HBox();
         Button addButton = new Button("Add");
-        addButton.setOnAction(e -> new Event(null, null, null, null, null).createEventPopup());
+        addButton.setOnAction(e -> new Event(tabManager, tabPane).createEventPopup(this, tabPane)); // Pass tabManager and tabPane to Event
         Button deleteButton = new Button("Delete");
         Button editButton = new Button("Edit");
         buttonBox.getChildren().addAll(addButton, deleteButton, editButton);
@@ -82,4 +85,14 @@ public class CalendarTab extends javafx.scene.control.Tab {
         calendarPane.getChildren().addAll(buttonBox);
         return calendarPane;
     }
+
+    public void addEventToList(LocalDate date, String title, String description) {
+        // Add event to the list
+        Event event = new Event(tabManager, tabPane); // Pass tabManager and tabPane to Event constructor
+        events.add(event);
+
+        // Update the ListView
+        upcomingEventsListView.getItems().add(event.toString());
+    }
 }
+

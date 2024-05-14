@@ -1,8 +1,7 @@
+package com.esquibel.opslog;
+
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SplitPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
 public class OpsLogTab extends javafx.scene.control.Tab {
@@ -55,4 +54,3 @@ public class OpsLogTab extends javafx.scene.control.Tab {
         setContent(opsLogLayout);
     }
 }
-

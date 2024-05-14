@@ -1,16 +1,94 @@
+package com.esquibel.opslog;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.io.File;
 
 public class TabManagerMenuAction implements MenuAction {
+
+    private final TabPane tabPane; // Added reference to TabPane
+
+    public TabManagerMenuAction(TabPane tabPane) { // Constructor to initialize TabPane
+        this.tabPane = tabPane;
+    }
+
+    public static class TabInfo {
+        private String creationDate;
+        private String creator;
+        private String type;
+        private String title;
+        private String filePath;
+        private String visibility;
+
+        // Constructor
+        public TabInfo(String creationDate, String creator, String type, String title, String filePath, String visibility) {
+            this.creationDate = creationDate;
+            this.creator = creator;
+            this.type = type;
+            this.title = title;
+            this.filePath = filePath;
+            this.visibility = visibility;
+        }
+
+        // Getters and setters
+        public String getCreationDate() {
+            return creationDate;
+        }
+
+        public void setCreationDate(String creationDate) {
+            this.creationDate = creationDate;
+        }
+
+        public String getCreator() {
+            return creator;
+        }
+
+        public void setCreator(String creator) {
+            this.creator = creator;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getFilePath() {
+            return filePath;
+        }
+
+        public void setFilePath(String filePath) {
+            this.filePath = filePath;
+        }
+
+        public String getVisibility() {
+            return visibility;
+        }
+
+        public void setVisibility(String visibility) {
+            this.visibility = visibility;
+        }
+    }
 
     @Override
     public void execute() {
@@ -70,10 +148,10 @@ public class TabManagerMenuAction implements MenuAction {
                     String settingsFilePath = SettingMenuAction.getFilePath(); // Retrieve file path
                     String filepath = generateFilePath(title, settingsFilePath);
                     TabInfo newTab = new TabInfo(now.format(formatter), creator, type, title, filepath, "Visible");
-                    tableView.getItems().add(newTab);
+                    data.add(newTab);
                     createTabFolder(filepath);
                     if ("Calendar".equals(type)) {
-                        CalendarTab calendarTab = new CalendarTab();
+                        CalendarTab calendarTab = new CalendarTab(tabPane, this); // Pass TabPane and TabManagerMenuAction
                         addTabToPane(calendarTab, title);
                     } else if ("OpsLog".equals(type)) {
                         OpsLogTab opsLogTab = new OpsLogTab();
@@ -127,25 +205,13 @@ public class TabManagerMenuAction implements MenuAction {
         }
     }
 
-    private void addTabToPane(TabInfo tabInfo, String title) {
+    private void addTabToPane(Tab tab, String title) {
         // Create a new tab based on tabInfo and add it to the tabPane
-        Tab tab = new Tab();
         tab.setText(title);
         tabPane.getTabs().add(tab);
-    }
-    
-    private void createTabFolder(String filepath) {
-        // Create folder using the filepath
-        File folder = new File(filepath);
-        if (!folder.exists()) {
-            boolean success = folder.mkdirs();
-            if (!success) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Failed to create folder for tab.");
-                alert.showAndWait();
-            }
-        }
+        // Assuming tabPane is defined somewhere in your application
+        tabPane.getTabs().add(tab);
     }
 }
+
+
