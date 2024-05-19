@@ -60,3 +60,4 @@ The top box will be the navigator box which will allow the user to navigate/cont
   - [CalendarFX](https://dlsc.com/products/calendarfx/)
   - [JFXCalendar](https://github.com/JKostikiadis/JFXCalendar/tree/master/src/model)
 - **JavaFX Application Structure and Adding Controllers to FXML:** [YouTube Tutorial](https://www.youtube.com/watch?v=WOtcjvtOeZw)
+- **JavaFX CSS Tutorial #3 TabPane CSS** https://www.youtube.com/watch?v=MyByMfzNRNA
