@@ -208,7 +208,6 @@ public class TabManagerMenuAction implements MenuAction {
     private void addTabToPane(Tab tab, String title) {
         // Create a new tab based on tabInfo and add it to the tabPane
         tab.setText(title);
-        tabPane.getTabs().add(tab);
         // Assuming tabPane is defined somewhere in your application
         tabPane.getTabs().add(tab);
     }
